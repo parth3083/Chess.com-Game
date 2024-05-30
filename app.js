@@ -44,20 +44,24 @@ io.on("connection", function (uniqueSocket) {
   });
   // CHECKING THE MOVE AND THE PLAYERS TURN SIMONTANEOUSLY
   uniqueSocket.on("move", (move) => {
+
     try {
-      if (chess.turn() === "w" && uniqueSocket.id !== players.white) {
-        return;
-      }
-      if (chess.turn() === "b" && uniqueSocket.id !== players.black) {
-        return;
-      }
+      if (chess.turn() === "w" && uniqueSocket.id !== players.white) return; 
+      if (chess.turn() === "b" && uniqueSocket.id !== players.black) return; 
 
       const result = chess.move(move);
       if (result) {
         currentPlayer = chess.turn();
         io.emit("move", move);
+        io.emit("boardState", chess.fen());
+      } else {
+        console.log("Invalid Move: ", move);
+        uniqueSocket.emit("InvalidMove", move); 
       }
-    } catch (error) {}
+    } catch (error) {
+      console.log(`Error Occured: ${error}`);
+      uniqueSocket.emit("InvalidMove", move); 
+    }
   });
 });
 
